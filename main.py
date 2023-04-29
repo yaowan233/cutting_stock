@@ -59,27 +59,27 @@ for item in items:
 
 @lru_cache(2**16)
 def get_f(x: int, y: int, items: tuple[Item], res) -> tuple[float, tuple[Item]]:
-    ls = [item.width for item in items if item.demand > 0]
+    ls = [item.width for item in items if item.demand > 0]  # 筛选出待切割目标物件的宽度
     miny = min(ls) if ls else 10000000000000000
     if y < miny:
-        return 0, items
+        return 0, items  # 如果没有需要切割的物件的话 直接返回值
     # if y % 250 == 1 and y > 200:
     #     print(res, y)
     items = list(items)
     items = copy.deepcopy(items)
     value_ls = [0]
     for item in items:
-        if y >= item.width and x >= item.length and item.demand > 0:
-            e_i = min(x // item.length, item.demand)
-            item.demand -= e_i
-            item.place.append((x - item.length, W - y, e_i))
-            ans, items = get_f(x, y - item.width, tuple(items), res)
-            ans += e_i * item.value
-            if ans > 0:
+        if y >= item.width and x >= item.length and item.demand > 0:  # 如果物品能够在长x宽y的板子上被切割的话
+            e_i = min(x // item.length, item.demand)  # 在一行中物品能切割的最多数量
+            item.demand -= e_i  # 减少需求量
+            item.place.append((x - item.length, W - y, e_i))  # 增加物品坐标与切割数量
+            ans, items = get_f(x, y - item.width, tuple(items), res)  # 在(x, y - item.width)的板子上递归的求解
+            ans += e_i * item.value  # 得到总体的value
+            if ans > 0:  # 防止0值append加快速度
                 value_ls.append(ans)
-        elif y >= item.width and x >= item.length:
+        elif y >= item.width and x >= item.length:  # 剪枝，提前跳出循环
             break
-    res = max(value_ls)
+    res = max(value_ls)  # 挑选出最能切割出最多value的切割方式
     return res, tuple(items)
 
 
