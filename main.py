@@ -67,20 +67,20 @@ def get_f(x: int, y: int, items: tuple[Item], res) -> tuple[float, tuple[Item]]:
     #     print(res, y)
     items = list(items)
     items = copy.deepcopy(items)
-    value_ls = [0]
+    value_ls = [(0, tuple())]
     for item in items:
         if y >= item.width and x >= item.length and item.demand > 0:  # 如果物品能够在长x宽y的板子上被切割的话
             e_i = min(x // item.length, item.demand)  # 在一行中物品能切割的最多数量
             item.demand -= e_i  # 减少需求量
             item.place.append((x - item.length, W - y, e_i))  # 增加物品坐标与切割数量
-            ans, items = get_f(x, y - item.width, tuple(items), res)  # 在(x, y - item.width)的板子上递归的求解
-            ans += e_i * item.value  # 得到总体的value
-            if ans > 0:  # 防止0值append加快速度
-                value_ls.append(ans)
+            f, ans_items = get_f(x, y - item.width, tuple(items), res)  # 在(x, y - item.width)的板子上递归的求解
+            f += e_i * item.value  # 得到总体的value
+            if f > 0:  # 防止0值append加快速度
+                value_ls.append((f, ans_items))
         elif y >= item.width and x >= item.length:  # 剪枝，提前跳出循环
             break
-    res = max(value_ls)  # 挑选出最能切割出最多value的切割方式
-    return res, tuple(items)
+    res = max(value_ls, key=lambda v: v[0])  # 挑选出最能切割出最多value的切割方式
+    return res
 
 
 # 考虑W * x 板子的切割
