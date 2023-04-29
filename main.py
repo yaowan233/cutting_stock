@@ -83,28 +83,30 @@ def get_f(x: int, y: int, items: tuple[Item], res) -> tuple[float, tuple[Item]]:
     return res, tuple(items)
 
 
+# 考虑W * x 板子的切割
 @lru_cache(2**16)
 def generate_pattern(items: tuple[Item], res, x) -> tuple[float, tuple[Item]]:
-    ls = [item.length for item in items if item.demand > 0]
+    ls = [item.length for item in items if item.demand > 0]  # 筛选出待切割目标物件的长度
     minx = min(ls) if ls else 10000000000000
     if x < minx:
-        return res, items
+        return res, items  # 如果没有需要切割的物件的话 直接返回值
     l_set = set()
-    l_set.add(x)
+    l_set.add(x)  # 首先整个板子的长度需要考虑
+    # 然后待切割的目标物品的倍数长度也要考虑
     for item in items:
         count = 1
         while count * item.length < L and count <= item.demand:
             l_set.add(count * item.length)
             count += 1
-    l_set = sorted(l_set)
+    l_set = sorted(l_set)  # 根据长度排序
     ans = []
     for l in l_set:
-        res1, items1 = get_f(l, W, items, res)
-        res2, items2 = generate_pattern(items1, 0, x - l)
-        res1 += res2
+        res1, items1 = get_f(l, W, items, res)  # 计算出l x W板中切割所能产生的value
+        res2, items2 = generate_pattern(items1, 0, x - l)  # 递归的求解(x - l, W)板子的最大value
+        res1 += res2  # 得到最优解
         if res1 > 0:
             ans.append((res1, tuple(items2)))
-    return max(ans, key=lambda x: x[0]) if ans else (0, tuple())
+    return max(ans, key=lambda x: x[0]) if ans else (0, tuple())  # 返回总体最优解
 
 
 items = items[:5]
