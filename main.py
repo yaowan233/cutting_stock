@@ -21,7 +21,7 @@ class Item:
 
     # for Item printing
     def __repr__(self) -> str:
-        return f"\nid: {self.id}, length: {self.length}, width: {self.width}, demand: {self.demand}"
+        return f"\nid: {self.id}, length: {self.length}, width: {self.width}, demand: {self.demand}, pos: {self.place}"
 
     # for sorting
     def __lt__(self, other):
@@ -59,23 +59,29 @@ for item in items:
 
 @lru_cache(2**16)
 def get_f(x: int, y: int, old_items: tuple[Item], res, x_pos) -> tuple[float, tuple[Item]]:
-    ls = [item.width for item in old_items if item.demand > 0 and item.length > x]  # 筛选出待切割目标物件的宽度
-    miny = min(ls) if ls else 10000000000000000
-    if y < miny:
-        return 0, old_items  # 如果没有需要切割的物件的话 直接返回值
-    value_ls = [(0, old_items)]
+    ls = [item.width for item in old_items if item.demand > 0 and item.length <= x and item.width <= y]  # 筛选出待切割目标物件的宽度
+    if not ls:
+        return res, old_items  # 如果没有需要切割的物件的话 直接返回值
+    miny = min(ls)
+    value_ls = [(res, old_items)]
     items = list(old_items)
     items = copy.deepcopy(items)
-    for item in items:
+    items.sort(key=lambda x1: x1.width)
+    for index, item in enumerate(items):
+        if item.width < miny:
+            continue
         if y >= item.width and x >= item.length and item.demand > 0:  # 如果物品能够在长x宽y的板子上被切割的话
+            item = copy.copy(item)
+            new_items = items.copy()
             e_i = min(x // item.length, item.demand)  # 在一行中物品能切割的最多数量
             item.demand -= e_i  # 减少需求量
             item.place.append((L - x_pos, W - y, e_i))  # 增加物品坐标与切割数量
-            f, ans_items = get_f(x, y - item.width, tuple(items), res, x_pos)  # 在(x, y - item.width)的板子上递归的求解
+            new_items[index] = item
+            f, ans_items = get_f(x, y - item.width, tuple(new_items), res, x_pos)  # 在(x, y - item.width)的板子上递归的求解
             f += e_i * item.value  # 得到总体的value
             if f > 0:  # 防止0值append加快速度
                 value_ls.append((f, ans_items))
-        elif y >= item.width and x >= item.length and item.demand != 0:  # 剪枝，提前跳出循环
+        elif y < item.width and item.demand != 0:  # 剪枝，提前跳出循环
             break
     # 挑选出最能切割出最多 value 的切割方式
     res = max(value_ls, key=lambda v: v[0])
@@ -86,10 +92,9 @@ def get_f(x: int, y: int, old_items: tuple[Item], res, x_pos) -> tuple[float, tu
 @lru_cache(2**16)
 def generate_pattern(items: tuple[Item], res, x) -> tuple[float, tuple[Item]]:
     # 筛选出待切割目标物件的长度
-    ls = [item.length for item in items if item.demand > 0]
-    minx = min(ls) if ls else 10000000000000
+    ls = [item.length for item in items if item.demand > 0 and item.length <= x]
     # 如果没有需要切割的物件的话 直接返回值
-    if x < minx:
+    if not ls:
         return res, items
     l_set = set()
     # 首先整个板子的长度需要考虑
@@ -97,7 +102,7 @@ def generate_pattern(items: tuple[Item], res, x) -> tuple[float, tuple[Item]]:
     # 然后待切割的目标物品的倍数长度也要考虑
     for item in items:
         count = 1
-        while count * item.length < L and count <= item.demand:
+        while count * item.length < x and count <= item.demand:
             l_set.add(count * item.length)
             count += 1
     # 根据长度排序
@@ -113,18 +118,18 @@ def generate_pattern(items: tuple[Item], res, x) -> tuple[float, tuple[Item]]:
     return max(ans, key=lambda x: x[0]) if ans else (0, tuple())
 
 
-items = items[:5]
+items = items[:13]
 items.sort()
 
+# print(get_f(L, W, tuple(items), 0, L))
 ans = generate_pattern(tuple(items), 0, L)
-print(ans)
-print(get_f(W, L, tuple(items), 0, 0))
-for i in ans[1]:
-    print(i.place)
+# print(ans)
+# for i in ans[1]:
+#     print(i.place)
 
 img = Image.new("RGB", (2440, 1220))
 draw = ImageDraw.Draw(img)
 for item in ans[1]:
     for i in item.place:
-        draw.rectangle((i[0], i[1], i[0] + item.length, i[1] + item.width))
+        draw.rectangle((i[0], i[1], i[0] + item.length, i[1] + item.width), fill=(255, 255, 255), outline=(155, 155, 155), width=10)
 img.show()
