@@ -82,7 +82,7 @@ def get_f(
         # 如果物品能够在长 x 宽 y 的板子上被切割的话
         if y >= item.width and x >= item.length and item.demand > 0:
             item = copy.deepcopy(item)
-            new_items = copy.deepcopy(list(old_items))
+            new_items = list(old_items)
             e_i = min(x // item.length, item.demand)  # 在一行中物品能切割的最多数量
             item.demand -= e_i  # 减少需求量
             item.place.append((L - x_pos, W - y, e_i))  # 增加物品坐标与切割数量
@@ -135,7 +135,7 @@ def generate_pattern(
 # if SHUFFLE:
 #     random.shuffle(items)
 # items = items[:SCALE]
-items = items[200:210]
+items = items[488:500]
 items.sort()
 
 
