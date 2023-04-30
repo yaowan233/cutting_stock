@@ -74,8 +74,8 @@ def get_f(x: int, y: int, old_items: tuple[Item], res, x_pos) -> tuple[float, tu
         if item.width < miny:
             continue
         if y >= item.width and x >= item.length and item.demand > 0:  # 如果物品能够在长x宽y的板子上被切割的话
-            item = copy.copy(item)
-            new_items = items.copy()
+            item = copy.deepcopy(item)
+            new_items = copy.deepcopy(items)
             e_i = min(x // item.length, item.demand)  # 在一行中物品能切割的最多数量
             item.demand -= e_i  # 减少需求量
             item.place.append((L - x_pos, W - y, e_i))  # 增加物品坐标与切割数量
@@ -130,7 +130,7 @@ print(ans)
 img = Image.new("RGB", (2440, 1220))
 draw = ImageDraw.Draw(img)
 for item in ans[1]:
-    color = (random.randint(0,255), random.randint(0,255), random.randint(0,255))
+    color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
     for i in item.place:
         for num in range(i[2]):
             draw.rectangle((i[0] + num * item.length, i[1], i[0] + (num + 1) * item.length, i[1] + item.width), fill=color, outline=(155, 155, 155), width=10)
