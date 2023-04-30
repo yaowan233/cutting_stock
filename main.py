@@ -1,5 +1,8 @@
 import copy
+import random
 from functools import lru_cache
+from random import shuffle
+
 from pandas import read_csv
 import sys
 from PIL import Image, ImageDraw
@@ -110,7 +113,7 @@ def generate_pattern(items: tuple[Item], res, x) -> tuple[float, tuple[Item]]:
     ans = []
     for l in l_set:
         res1, items1 = get_f(l, W, items, res, x)  # 计算出l x W板中切割所能产生的value
-        res2, items2 = generate_pattern(items1, 0, x - l)  # 递归的求解(x - l, W)板子的最大value
+        res2, items2 = generate_pattern(items1, res1, x - l)  # 递归的求解(x - l, W)板子的最大value
         res1 += res2  # 得到最优解
         if res1 > 0:
             ans.append((res1, tuple(items2)))
@@ -118,18 +121,17 @@ def generate_pattern(items: tuple[Item], res, x) -> tuple[float, tuple[Item]]:
     return max(ans, key=lambda x: x[0]) if ans else (0, tuple())
 
 
-items = items[:13]
+items = items[200:210]
 items.sort()
 
-# print(get_f(L, W, tuple(items), 0, L))
 ans = generate_pattern(tuple(items), 0, L)
-# print(ans)
-# for i in ans[1]:
-#     print(i.place)
 
+print(ans)
 img = Image.new("RGB", (2440, 1220))
 draw = ImageDraw.Draw(img)
 for item in ans[1]:
+    color = (random.randint(0,255), random.randint(0,255), random.randint(0,255))
     for i in item.place:
-        draw.rectangle((i[0], i[1], i[0] + item.length, i[1] + item.width), fill=(255, 255, 255), outline=(155, 155, 155), width=10)
+        for num in range(i[2]):
+            draw.rectangle((i[0] + num * item.length, i[1], i[0] + (num + 1) * item.length, i[1] + item.width), fill=color, outline=(155, 155, 155), width=10)
 img.show()
