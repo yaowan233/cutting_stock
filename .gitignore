@@ -1,3 +1,7 @@
 *.pdf
 origin.py
 test*.*
+/.vscode
+
+/rust
+/cpp
