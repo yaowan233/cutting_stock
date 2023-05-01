@@ -1,7 +1,8 @@
 *.pdf
 origin.py
-test*.*
+mytest*.*
 /.vscode
+/__pycache__
 
 /rust
 /cpp
