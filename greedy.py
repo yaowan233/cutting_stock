@@ -11,7 +11,11 @@ W = 1220
 def get_f(
     x: int, y: int, old_items: list[Item], res: float, x_pos: int
 ) -> tuple[float, list[Item]]:
-    items = [item for item in old_items if item.demand > 0 and item.length <= x and item.width <= y]
+    items = [
+        item
+        for item in old_items
+        if item.demand > 0 and item.length <= x and item.width <= y
+    ]
     if not items:
         return res, old_items
     item = max(items, key=lambda x: x.value)
@@ -24,9 +28,7 @@ def get_f(
 
 
 # 考虑 W * x 板子的切割
-def generate_pattern(
-    items: list[Item], res: float, x: int
-) -> tuple[float, list[Item]]:
+def generate_pattern(items: list[Item], res: float, x: int) -> tuple[float, list[Item]]:
     # 如果没有需要切割的物件的话 直接返回值
     items_new = [item for item in items if item.demand > 0 and item.length <= x]
     if not items_new:
@@ -47,7 +49,7 @@ def generate(items: list[Item], begin=0, end=1, output=False, test=True) -> list
     if output:
         with open("output/log.txt", "a") as f:
             f.write(
-                f"scale: {len(items)}, [{begin},{end - 1}]\ntimeit: {stop_test - start_test}\nans: {ans}\n"
+                f"scale: {len(items)}, [{begin},{end - 1}]\ntimeit: {stop_test - start_test}\n"  # ans: {ans}\n"
             )
     elif test:
         print("timeit: ", stop_test - start_test)
