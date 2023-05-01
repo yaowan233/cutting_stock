@@ -1,10 +1,12 @@
-from item import Item
-from generate_pattern import W, L
 from PIL import Image, ImageDraw
 import random
+from item import Item
+
+log = 0
 
 
-def draw(ans: tuple[Item]) -> None:
+def draw(ans: tuple[Item], output=False, L=2440, W=1220) -> None:
+    global log
     img = Image.new("RGB", (L, W))
     draw = ImageDraw.Draw(img)
     for item in ans:
@@ -22,4 +24,8 @@ def draw(ans: tuple[Item]) -> None:
                     outline=(155, 155, 155),
                     width=10,
                 )
-    img.show()
+    if output:
+        img.save(f"output/{str(log)}.jpeg", quality=50)
+        log += 1
+    else:
+        img.show()

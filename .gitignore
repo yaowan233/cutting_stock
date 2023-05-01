@@ -3,6 +3,7 @@ origin.py
 mytest*.*
 /.vscode
 /__pycache__
+/output
 
 /rust
 /cpp
