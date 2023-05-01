@@ -4,14 +4,12 @@ from functools import lru_cache
 from pandas import read_csv
 import sys
 from PIL import Image, ImageDraw
-
-# import for test
 import timeit
 import cProfile
 
 sys.setrecursionlimit(3000)
 SHUFFLE = False  # 是否打乱
-SCALE = (35, 44)  # 数据取值，items = items[SCALE[0]:SCALE[1]]
+SCALE = (35, 50)  # 数据取值，items = items[SCALE[0]:SCALE[1]]
 TEST = True  # 是否输出测试信息
 PROFILE = False  # 是否使用 cProfile 性能分析
 
@@ -36,6 +34,7 @@ class Item:
         self.place = place
 
     __hash__ = object.__hash__
+    __slots__ = "id", "length", "demand", "width", "value", "place"
 
     # for Item printing
     def __repr__(self) -> str:
@@ -67,31 +66,28 @@ for i in data.iterrows():
 items = list(temp.values())
 del temp
 for item in items:
-    if item.length >= 0.5 * L and item.width >= 0.5 * W:
-        item.value = 4 * item.length * item.width
-    elif item.length >= 0.5 * L or item.width >= 0.5 * W:
-        item.value = 1.2 * item.length * item.width
-    else:
-        item.value = item.length * item.width
+    # if item.length >= 0.5 * L and item.width >= 0.5 * W:
+    #     item.value = 4 * item.length * item.width
+    # elif item.length >= 0.5 * L or item.width >= 0.5 * W:
+    #     item.value = 1.2 * item.length * item.width
+    # else:
+    item.value = item.length * item.width
 
 
 @lru_cache(2**16)
 def get_f(
-    x: int, y: int, old_items: tuple[Item], res: tuple[float, tuple[Item]], x_pos: int
+    x: int, y: int, old_items: tuple[Item], res: float, x_pos: int
 ) -> tuple[float, tuple[Item]]:
     # 筛选出待切割目标物件的宽度
-    miny = 1e7
-    for temp in old_items:
-        if (
-            temp.demand > 0
-            and temp.length <= x
-            and temp.width <= y
-            and miny > temp.width
-        ):
-            miny = temp.width
+    ls = [
+        item.width
+        for item in old_items
+        if item.demand > 0 and item.length <= x and item.width <= y
+    ]
     # 如果没有需要切割的物件的话 直接返回值
-    if miny == 1e7:
+    if not ls:
         return res, old_items
+    miny = min(ls)
     value_ls = (res, old_items)
     for index, item in enumerate(old_items):
         if item.width < miny:
@@ -118,7 +114,7 @@ def get_f(
             # 防止 0 值 append 加快速度
             if f > value_ls[0]:
                 value_ls = (f, ans_items)
-        elif y < item.width:  # 剪枝，提前跳出循环
+        elif y < item.width and item.demand != 0:  # 剪枝，提前跳出循环
             break
     # 挑选出最能切割出最多 value 的切割方式
     return value_ls
@@ -126,9 +122,7 @@ def get_f(
 
 # 考虑 W * x 板子的切割
 @lru_cache(2**16)
-def generate_pattern(
-    items: tuple[Item], res: tuple[float, tuple[Item]], x: int
-) -> tuple[float, tuple[Item]]:
+def generate_pattern(items: tuple[Item], res, x) -> tuple[float, tuple[Item]]:
     # 如果没有需要切割的物件的话 直接返回值
     if not any(item.demand > 0 and item.length <= x for item in items):
         return res, items
