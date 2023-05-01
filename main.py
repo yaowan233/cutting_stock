@@ -2,7 +2,7 @@ import random
 import sys, cProfile
 from item import Item
 from read_file import read_file
-from generate_pattern import generate
+from greedy import generate
 
 sys.setrecursionlimit(3000)
 
@@ -17,7 +17,7 @@ pattern_used = 0
 
 if SHUFFLE:
     random.shuffle(total_items)
-total_items = total_items[SCALE[0] : SCALE[1]]
+# total_items = total_items[SCALE[0]: SCALE[1]]
 
 if PROFILE:
     cProfile.run("generate(tuple(total_items), 0)")
@@ -29,4 +29,4 @@ items.sort()
 # debug
 print(items)
 
-ans = generate(tuple(items), 0)
+ans = generate(items, 0)

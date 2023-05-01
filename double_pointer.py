@@ -17,7 +17,7 @@ PROFILE = False  # 是否使用 cProfile 性能分析
 OUTPUT = True  # 是否输出日志
 
 
-total_items: list[Item] = read_file("dataA/dataA1.csv")
+total_items: list[Item] = read_file("dataA/dataA2.csv")
 pattern_used = 0
 
 if SHUFFLE:
