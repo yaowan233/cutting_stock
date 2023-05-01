@@ -9,7 +9,7 @@ import cProfile
 
 sys.setrecursionlimit(3000)
 SHUFFLE = False  # 是否打乱
-SCALE = (35, 50)  # 数据取值，items = items[SCALE[0]:SCALE[1]]
+SCALE = (0, 20)  # 数据取值，items = items[SCALE[0]:SCALE[1]]
 TEST = True  # 是否输出测试信息
 PROFILE = False  # 是否使用 cProfile 性能分析
 
@@ -38,7 +38,7 @@ class Item:
 
     # for Item printing
     def __repr__(self) -> str:
-        return f"\nid: {self.id:3}, length: {self.length:4}, width: {self.width:4}, demand: {self.demand:2}, pos: {self.place}"
+        return f"\nid: {self.id:3} ,length: {self.length:4} ,width:{self.width:4} ,demand: {self.demand:2} ,value: {self.value:8} ,pos: {self.place}"
 
     # for sorting
     def __lt__(self, other):
@@ -108,21 +108,22 @@ def get_f(
             new_item.place.append((L - x_pos, W - y, e_i))  # 增加物品坐标与切割数量
             new_items[index] = new_item
             # 在 (x, y - item.width) 的板子上递归的求解
-            f, ans_items = get_f(x, y - item.width, tuple(new_items), res, x_pos)
-            # 得到总体的 value
-            f += e_i * item.value
-            # 防止 0 值 append 加快速度
+            f, ans_items = get_f(
+                x, y - item.width, tuple(new_items), res + e_i * item.value, x_pos
+            )
+            # 挑选出最能切割出最多 value 的切割方式
             if f > value_ls[0]:
                 value_ls = (f, ans_items)
-        elif y < item.width and item.demand != 0:  # 剪枝，提前跳出循环
+        elif y < item.width:  # 剪枝，提前跳出循环
             break
-    # 挑选出最能切割出最多 value 的切割方式
     return value_ls
 
 
 # 考虑 W * x 板子的切割
 @lru_cache(2**16)
-def generate_pattern(items: tuple[Item], res, x) -> tuple[float, tuple[Item]]:
+def generate_pattern(
+    items: tuple[Item], res: float, x: int
+) -> tuple[float, tuple[Item]]:
     # 如果没有需要切割的物件的话 直接返回值
     if not any(item.demand > 0 and item.length <= x for item in items):
         return res, items
@@ -144,9 +145,8 @@ def generate_pattern(items: tuple[Item], res, x) -> tuple[float, tuple[Item]]:
         res1, items1 = get_f(l, W, items, res, x)
         # 递归求解 (x - l, W) 板子的最大 value
         res2, items2 = generate_pattern(items1, res1, x - l)
-        res1 += res2  # 得到最优解
-        if res1 > ans[0]:
-            ans = (res1, items2)
+        if res2 > ans[0]:
+            ans = (res2, items2)
     return ans
 
 
@@ -164,7 +164,7 @@ ans = generate_pattern(tuple(items), 0, L)
 
 if TEST:
     stop_test = timeit.default_timer()
-    print("scale: ", SCALE[1] - SCALE[0])
+    print(f"scale: {SCALE[1] - SCALE[0]}, ({SCALE[0]},{SCALE[1]})\tSHUFFLE: {SHUFFLE}")
     print("timeit: ", stop_test - start_test)
     print("ans: ", ans)
 
