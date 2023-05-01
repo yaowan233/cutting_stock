@@ -4,22 +4,36 @@ from functools import lru_cache
 from pandas import read_csv
 import sys
 from PIL import Image, ImageDraw
+
+# import for test
 import timeit
+import cProfile
 
 sys.setrecursionlimit(3000)
-SHUFFLE = True  # 是否打乱
-SCALE = 8  # 数据规模
-TEST = True  # 是否测试
+SHUFFLE = False  # 是否打乱
+SCALE = (35, 44)  # 数据取值，items = items[SCALE[0]:SCALE[1]]
+TEST = True  # 是否输出测试信息
+PROFILE = False  # 是否使用 cProfile 性能分析
 
 
 class Item:
-    def __init__(self, id, length: float, width: float, demand: int):
+    def __init__(
+        self,
+        id: int,
+        length: float,
+        width: float,
+        demand: int,
+        value: float = None,
+        place: list = None,
+    ):
+        if place is None:
+            place = []
         self.id = id
         self.length = int(length)
         self.width = int(width)
         self.demand = demand
-        self.value = None  # to be determined later
-        self.place = []
+        self.value = value
+        self.place = place
 
     __hash__ = object.__hash__
 
@@ -66,27 +80,37 @@ def get_f(
     x: int, y: int, old_items: tuple[Item], res: tuple[float, tuple[Item]], x_pos: int
 ) -> tuple[float, tuple[Item]]:
     # 筛选出待切割目标物件的宽度
-    ls = [
-        item.width
-        for item in old_items
-        if item.demand > 0 and item.length <= x and item.width <= y
-    ]
+    miny = 1e7
+    for temp in old_items:
+        if (
+            temp.demand > 0
+            and temp.length <= x
+            and temp.width <= y
+            and miny > temp.width
+        ):
+            miny = temp.width
     # 如果没有需要切割的物件的话 直接返回值
-    if not ls:
+    if miny == 1e7:
         return res, old_items
-    miny = min(ls)
     value_ls = (res, old_items)
     for index, item in enumerate(old_items):
         if item.width < miny:
             continue
         # 如果物品能够在长 x 宽 y 的板子上被切割的话
         if y >= item.width and x >= item.length and item.demand > 0:
-            item = copy.deepcopy(item)
             new_items = list(old_items)
+            new_item = Item(
+                item.id,
+                item.length,
+                item.width,
+                item.demand,
+                item.value,
+                copy.copy(item.place),
+            )
             e_i = min(x // item.length, item.demand)  # 在一行中物品能切割的最多数量
-            item.demand -= e_i  # 减少需求量
-            item.place.append((L - x_pos, W - y, e_i))  # 增加物品坐标与切割数量
-            new_items[index] = item
+            new_item.demand -= e_i  # 减少需求量
+            new_item.place.append((L - x_pos, W - y, e_i))  # 增加物品坐标与切割数量
+            new_items[index] = new_item
             # 在 (x, y - item.width) 的板子上递归的求解
             f, ans_items = get_f(x, y - item.width, tuple(new_items), res, x_pos)
             # 得到总体的 value
@@ -94,7 +118,7 @@ def get_f(
             # 防止 0 值 append 加快速度
             if f > value_ls[0]:
                 value_ls = (f, ans_items)
-        elif y < item.width and item.demand != 0:  # 剪枝，提前跳出循环
+        elif y < item.width:  # 剪枝，提前跳出循环
             break
     # 挑选出最能切割出最多 value 的切割方式
     return value_ls
@@ -132,18 +156,21 @@ def generate_pattern(
     return ans
 
 
-# if SHUFFLE:
-#     random.shuffle(items)
-# items = items[:SCALE]
-items = items[488:500]
+if SHUFFLE:
+    random.shuffle(items)
+items = items[SCALE[0] : SCALE[1]]
 items.sort()
 
+if PROFILE:
+    cProfile.run("generate_pattern(tuple(items), 0, L)")
+    sys.exit(0)
 
 start_test = timeit.default_timer()
 ans = generate_pattern(tuple(items), 0, L)
+
 if TEST:
     stop_test = timeit.default_timer()
-    print("scale: ", SCALE)
+    print("scale: ", SCALE[1] - SCALE[0])
     print("timeit: ", stop_test - start_test)
     print("ans: ", ans)
 
