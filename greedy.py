@@ -33,7 +33,7 @@ def generate_pattern(items: list[Item], res: float, x: int) -> tuple[float, list
     items_new = [item for item in items if item.demand > 0 and item.length <= x]
     if not items_new:
         return res, items
-    item = max(items, key=lambda x: x.value)
+    item = max(items_new, key=lambda x: x.value)
     l = item.length
     res, items = get_f(l, W, items, res, x)
     return generate_pattern(items, res, x - l)
