@@ -1,7 +1,9 @@
 from pandas import read_csv
 from item import Item
+
 L = 2440
 W = 1220
+
 
 def read_file(filename: str) -> list[Item]:
     data = read_csv(filename)
@@ -20,9 +22,9 @@ def read_file(filename: str) -> list[Item]:
     del temp
     for item in items:
         if item.length >= 0.5 * L and item.width >= 0.5 * W:
-            item.value = 10000 * item.length * item.width
+            item.value = 10 * item.length * item.width
         elif item.length >= 0.5 * L or item.width >= 0.5 * W:
-            item.value = 500 * item.length * item.width
+            item.value = 4 * item.length * item.width
         else:
             item.value = item.length * item.width
     return items
