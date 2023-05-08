@@ -7,6 +7,7 @@ class Item:
         demand: int,
         value: float = None,
         place: list = None,
+        material: str = ""
     ):
         if place is None:
             place = []
@@ -14,11 +15,13 @@ class Item:
         self.length = int(length)
         self.width = int(width)
         self.demand = demand
+        self.area = self.length * self.width * self.demand
         self.value = value
         self.place = place
+        self.material = material
+        self.ratios = self.width / self.length
 
     __hash__ = object.__hash__
-    __slots__ = "id", "length", "demand", "width", "value", "place"
 
     # for Item printing
     def __repr__(self) -> str:

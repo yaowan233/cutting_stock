@@ -5,7 +5,7 @@ L = 2440
 W = 1220
 
 
-def read_file(filename: str) -> list[Item]:
+def read_file(filename: str, a1, a2) -> list[Item]:
     data = read_csv(filename)
     temp = {}
     for i in data.iterrows():
@@ -22,9 +22,9 @@ def read_file(filename: str) -> list[Item]:
     del temp
     for item in items:
         if item.length >= 0.5 * L and item.width >= 0.5 * W:
-            item.value = 10 * item.length * item.width
+            item.value = a1 * item.length * item.width
         elif item.length >= 0.5 * L or item.width >= 0.5 * W:
-            item.value = 4 * item.length * item.width
+            item.value = a2 * item.length * item.width
         else:
             item.value = item.length * item.width
     return items
@@ -32,4 +32,5 @@ def read_file(filename: str) -> list[Item]:
 
 # test
 if __name__ == "__main__":
-    print(read_file("dataA/dataA1.csv"))
+    items = read_file("dataA/dataA5.csv", 10, 5)
+    print(sum([item.area for item in items]))

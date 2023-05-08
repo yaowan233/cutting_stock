@@ -40,9 +40,9 @@ def generate_pattern(items: list[Item], res: float, x: int) -> tuple[float, list
 
 
 def generate(items: list[Item], begin=0, end=1, output=False, test=True) -> list[Item]:
-    print(
-        f"running scale: {len(items):2}, [{begin},{end - 1}]\tvalue_sum: {sum(i.value*i.demand for i in items)}\tdemand_sum: {sum(i.demand for i in items)}"
-    )
+    # print(
+    #     f"running scale: {len(items):2}, [{begin},{end - 1}]\tvalue_sum: {sum(i.value*i.demand for i in items)}\tdemand_sum: {sum(i.demand for i in items)}"
+    # )
     start_test = timeit.default_timer()
     ans = generate_pattern(items, 0, L)
     stop_test = timeit.default_timer()
