@@ -28,4 +28,5 @@ def draw(ans: tuple[Item], output=False, L=2440, W=1220) -> None:
         img.save(f"output/{str(log)}.jpeg", quality=50)
         log += 1
     else:
-        img.show()
+        # img.show()
+        ...
