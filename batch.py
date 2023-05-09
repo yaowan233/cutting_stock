@@ -39,7 +39,6 @@ def read_file(filename: str):
     return batch
 
 
-batch_ls = []
 batch = read_file("dataB/dataB1.csv")
 for i in batch.values():
     if sum([item.demand for item in i]) <= 1000 and sum([item.area for item in i]) <= 250000000:
@@ -71,8 +70,42 @@ for i in batch.values():
     # item_t4 = [item for index, item in enumerate(i) if labels[index] == t4]
     print(123)
     num, area = 0, 0
-    while num < 1000 and area < 250000000:
-        pass
+    ls = []
+    batch_ls = []
+
+    while True:
+        if not item_t1 and not item_t2 and not item_t3:
+            batch_ls.append(ls)
+            break
+        if item_t2:
+            if num + item_t2[-1].demand > 1000 or area + item_t2[-1].area > 250000000:
+                batch_ls.append(ls)
+                ls = []
+                num, area = 0, 0
+                continue
+            num += item_t2[-1].demand
+            area += item_t2[-1].area
+            ls.append(item_t2.pop())
+        for _ in range(2):
+            if item_t1:
+                if num + item_t1[-1].demand > 1000 or area + item_t1[-1].area > 250000000:
+                    batch_ls.append(ls)
+                    ls = []
+                    num, area = 0, 0
+                    continue
+                num += item_t1[-1].demand
+                area += item_t1[-1].area
+                ls.append(item_t1.pop())
+            if item_t3:
+                if num + item_t3[-1].demand > 1000 or area + item_t3[-1].area > 250000000:
+                    batch_ls.append(ls)
+                    ls = []
+                    num, area = 0, 0
+                    continue
+                num += item_t3[-1].demand
+                area += item_t3[-1].area
+                ls.append(item_t3.pop())
+    print('???')
     # batch_ls.append()
     # 可视化结果
     # plt.scatter(X[:, 0], X[:, 1], c=labels)
