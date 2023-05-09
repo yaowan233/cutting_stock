@@ -5,6 +5,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
+from greedy_test import main
+
 
 L = 2440
 W = 1220
@@ -42,6 +44,7 @@ def read_file(filename: str):
 batch = read_file("dataB/dataB1.csv")
 for i in batch.values():
     if sum([item.demand for item in i]) <= 1000 and sum([item.area for item in i]) <= 250000000:
+        print(main(i))
         continue
     ratios = [item.ratios for item in i]
     areas = [item.area for item in i]
@@ -105,7 +108,9 @@ for i in batch.values():
                 num += item_t3[-1].demand
                 area += item_t3[-1].area
                 ls.append(item_t3.pop())
-    print('???')
+    for b in batch_ls:
+        print(main(i))
+
     # batch_ls.append()
     # 可视化结果
     # plt.scatter(X[:, 0], X[:, 1], c=labels)
